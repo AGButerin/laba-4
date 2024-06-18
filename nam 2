@@ -1,0 +1,104 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+const int N = 3; // Количество переменных в системе
+
+// Функция для вычисления определителя матрицы размера 3x3
+double determinant(vector<vector<double>>& matrix) {
+    return matrix[0][0]*(matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1]) 
+         - matrix[0][1]*(matrix[1][0]*matrix[2][2] - matrix[1][2]*matrix[2][0])
+         + matrix[0][2]*(matrix[1][0]*matrix[2][1] - matrix[1][1]*matrix[2][0]);
+}
+
+// Функция для вычисления решений методом Крамера
+vector<double> solveWithCramer(vector<vector<double>>& A, vector<double>& B) {
+    vector<double> solution(N);
+    double detA = determinant(A);
+    
+    // Вычисляем решение для каждой переменной xi по формуле Крамера
+    for (int i = 0; i < N; ++i) {
+        // Создаем копию матрицы A, заменяя i-й столбец на вектор B
+        vector<vector<double>> Ai = A;
+        for (int j = 0; j < N; ++j) {
+            Ai[j][i] = B[j];
+        }
+        
+        // Вычисляем определитель Ai
+        double detAi = determinant(Ai);
+        
+        // Решение для переменной xi
+        solution[i] = detAi / detA;
+    }
+    
+    return solution;
+}
+
+// Функция для решения методом Якоби
+vector<double> solveWithJacobi(vector<vector<double>>& A, vector<double>& B, double tolerance = 1e-6, int maxIterations = 100) {
+    vector<double> x(N, 0.0); // Начальное приближение
+    
+    vector<double> x_new(N);
+    int iter = 0;
+    
+    while (iter < maxIterations) {
+        // Выполняем одну итерацию метода Якоби
+        for (int i = 0; i < N; ++i) {
+            double sum = 0.0;
+            for (int j = 0; j < N; ++j) {
+                if (j != i) {
+                    sum += A[i][j] * x[j];
+                }
+            }
+            x_new[i] = (B[i] - sum) / A[i][i];
+        }
+        
+        // Проверяем критерий останова (разность между текущим и предыдущим векторами неизвестных)
+        double max_diff = 0.0;
+        for (int i = 0; i < N; ++i) {
+            max_diff = max(max_diff, abs(x_new[i] - x[i]));
+        }
+        
+        if (max_diff < tolerance) {
+            break; // Условие достижения необходимой точности
+        }
+        
+        // Обновляем вектор x на новый
+        x = x_new;
+        iter++;
+    }
+    
+    return x_new;
+}
+
+int main() {
+    // Инициализация матрицы коэффициентов и вектора правой части
+    vector<vector<double>> A = {
+        {3, 12, -5},
+        {3, 5, -2},
+        {-1, 2, -1}
+    };
+    vector<double> B = {1, 1, 1};
+    
+    // Решение системы методом Крамера
+    vector<double> solutionCramer = solveWithCramer(A, B);
+    
+    // Вывод решения методом Крамера
+    cout << "Solution using Cramer's rule:" << endl;
+    for (int i = 0; i < N; ++i) {
+        cout << "x" << i+1 << " = " << solutionCramer[i] << endl;
+    }
+    
+    // Решение системы методом Якоби
+    vector<double> solutionJacobi = solveWithJacobi(A, B);
+    
+    // Вывод решения методом Якоби
+    cout << "\nSolution using Jacobi method:" << endl;
+    for (int i = 0; i < N; ++i) {
+        cout << "x" << i+1 << " = " << solutionJacobi[i] << endl;
+    }
+    
+    return 0;
+}
