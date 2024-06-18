@@ -1,0 +1,84 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+const int N = 4; // Количество переменных в системе
+
+// Функция для вывода матрицы
+void printMatrix(vector<vector<double>>& matrix) {
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j <= N; ++j) {
+            cout << matrix[i][j] << "\t";
+        }
+        cout << endl;
+    }
+}
+
+// Функция для решения системы методом Гаусса
+vector<double> gaussElimination(vector<vector<double>>& matrix) {
+    // Прямой ход метода Гаусса
+    for (int i = 0; i < N; ++i) {
+        // Находим максимальный элемент в столбце i и переставляем строки
+        int maxRow = i;
+        for (int k = i + 1; k < N; ++k) {
+            if (abs(matrix[k][i]) > abs(matrix[maxRow][i])) {
+                maxRow = k;
+            }
+        }
+        // Обмен строками (если необходимо)
+        if (maxRow != i) {
+            swap(matrix[i], matrix[maxRow]);
+        }
+        
+        // Делаем текущий элемент ведущим
+        double lead = matrix[i][i];
+        if (abs(lead) < 1e-10) {
+            // Если ведущий элемент близок к нулю, переходим к следующему столбцу
+            continue;
+        }
+        
+        // Приводим столбец i к единице делением на ведущий элемент
+        for (int j = i; j <= N; ++j) {
+            matrix[i][j] /= lead;
+        }
+        
+        // Обнуляем все элементы под ведущим элементом
+        for (int k = 0; k < N; ++k) {
+            if (k != i) {
+                double factor = matrix[k][i];
+                for (int j = i; j <= N; ++j) {
+                    matrix[k][j] -= factor * matrix[i][j];
+                }
+            }
+        }
+    }
+    
+    // Получаем решения системы
+    vector<double> solution(N);
+    for (int i = 0; i < N; ++i) {
+        solution[i] = matrix[i][N];
+    }
+    
+    return solution;
+}
+
+int main() {
+    vector<vector<double>> matrix = {
+        {8, 8, -5, -8, 13},
+        {8, -5, 9, -8, 38},
+        {5, -4, -6, -2, 14},
+        {8, 3, 6, 6, -95}
+    };
+    
+    // Решение системы методом Гаусса
+    vector<double> solution = gaussElimination(matrix);
+    
+    // Вывод решения
+    cout << "Solution using Gaussian Elimination:" << endl;
+    for (int i = 0; i < N; ++i) {
+        cout << "x" << i+1 << " = " << solution[i] << endl;
+    }
+    
+    return 0;
+}
