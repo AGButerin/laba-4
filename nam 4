@@ -1,0 +1,48 @@
+import numpy as np
+
+def solve_tridiagonal(A, B):
+
+    N = len(B)
+    alpha = np.zeros(N)
+    beta = np.zeros(N)
+    
+    # Прямой ход метода прогонки
+    alpha[1] = -A[0, 1] / A[0, 0]
+    beta[1] = B[0] / A[0, 0]
+    
+    for i in range(1, N-1):
+        denominator = A[i, i] + A[i, i-1] * alpha[i]
+        alpha[i+1] = -A[i, i+1] / denominator
+        beta[i+1] = (B[i] - A[i, i-1] * beta[i]) / denominator
+    
+    # Обратный ход метода прогонки
+    X = np.zeros(N)
+    X[-1] = (B[-1] - A[-1, -2] * beta[-1]) / (A[-1, -1] + A[-1, -2] * alpha[-1])
+    
+    for i in range(N-2, -1, -1):
+        X[i] = alpha[i+1] * X[i+1] + beta[i+1]
+    
+    return X
+
+def main():
+    # Инициализация матрицы коэффициентов A и вектора правой части B
+    A = np.array([
+        [-6, 5, 0, 0, 0],
+        [-1, 13, 6, 0, 0],
+        [0, -9, -15, -4, 0],
+        [0, 0, -1, -7, 1],
+        [0, 0, 0, 9, -18]
+    ], dtype=float)
+    
+    B = np.array([51, 100, -12, 47, -90], dtype=float)
+    
+    # Решение системы методом прогонки
+    solution = solve_tridiagonal(A, B)
+    
+    # Вывод решения
+    print("Solution using Thomas algorithm (Tridiagonal matrix algorithm):")
+    for i, x in enumerate(solution):
+        print(f"x{i+1} = {x}")
+
+if __name__ == "__main__":
+    main()
